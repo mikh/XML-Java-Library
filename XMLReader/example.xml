@@ -2,6 +2,7 @@
 <project>
 	Automated Bing Search
 </project>
+<!-- example comment -->
 <defined_values>
 	<String>
 		<BING_URL>
