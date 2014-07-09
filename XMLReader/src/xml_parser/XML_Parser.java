@@ -10,6 +10,8 @@ import string_operations.StrOps;
 public class XML_Parser {
 	ArrayList<String> opening_sequences = new ArrayList<String>();
 	ArrayList<String> closing_sequences = new ArrayList<String>();
+	XMLTree tree;
+	private int ID;
 	
 	public XML_Parser(){
 		opening_sequences.add("<");
@@ -23,23 +25,172 @@ public class XML_Parser {
 	}
 	
 	public void parseXML(String XMLFile){
-		XMLTree tree = new XMLTree();
+		tree = new XMLTree();
 		String file = readFile(XMLFile);
 		int index = 0;
-		int ID = 0;
+		ID = 0;
 		
 		String line = StrOps.getNextSection(file, opening_sequences, closing_sequences, index);
 		while(line != null){
-			System.out.println(line);
 			index = updateIndex(file, line, index);
-			parseSection(line, tree, ID++);
+			parseSection(line, tree);
 			line = StrOps.getNextSection(file, opening_sequences, closing_sequences, index);
 		}
-		
+/*
+		System.out.println("\n\nSEARCH TEST:\n");
+		ArrayList<String> search_parameters = new ArrayList<String>();
+		ArrayList<ArrayList<String>> parameter_values = new ArrayList<ArrayList<String>>();
+		ArrayList<XMLNode> nodes = search("TEST", search_parameters, parameter_values);
+		for(int ii = 0; ii < nodes.size(); ii++){
+			ArrayList<String> leaves = nodes.get(ii).getLeaves(nodes.get(ii));
+			System.out.println(nodes.get(ii).text + ":");
+			for(int kk = 0; kk < leaves.size(); kk++){
+				System.out.println(leaves.get(kk));
+			}
+			System.out.println("\n");
+		}
+
+		search_parameters.add("has_parent");
+		parameter_values.add(new ArrayList<String>());
+		parameter_values.get(0).add("String");
+		nodes = search("TEST", search_parameters, parameter_values);
+		for(int ii = 0; ii < nodes.size(); ii++){
+			ArrayList<String> leaves = nodes.get(ii).getLeaves(nodes.get(ii));
+			System.out.println(nodes.get(ii).text + ":");
+			for(int kk = 0; kk < leaves.size(); kk++){
+				System.out.println(leaves.get(kk));
+			}
+			System.out.println("\n");
+		}
+		*/
 		
 	}
 
-	private void parseSection(String line, XMLTree tree, int ID){
+	/**
+	 * Searches the parsed XML tree given a text string and a series of search parameters.
+	 * <p>
+	 *	Search parameters can be:
+	 *		has_parent - search for all nodes that have a parent given in the parameter_values
+	 *			if parameter_values contain just the name, then the parent can be anywhere in the heirarchy
+	 *			if there are additional values, the parent has to be at that position away from the child.
+	 *			For example, if the parameter_values entry contains:    "parent_name", "2", "3", "4"
+	 *			Then the 2nd, 3rd, OR 4th parent has to be identified as "parent_name" (0 indicates the child, 1 is the direct parent, etc.)
+	 *			If you wish to have "parent_name" as both the 2nd and 3rd entry, for example, you will have to use multiple search_parameters
+	 *		is_root    - checks if a given node is the root or not. The value for this parameter specifies if the result of the check should be true or false to pass
+	 *			If no value is provided, true is assumed.
+	 *		is_type	   - checks what type the node is. The value is the type desired. If more than one value, any of the values will pass the node
+	 *			possible values: 'tag', 'leaf', 'comment', 'attribute'
+	 *		has_parent_with_leaf - expansion on has_parent. Same idea, except 2nd parameter is the value of the leaf. If any of the leaves of the parent match the value the node passes
+	 *			position from child not implemented	
+	 *		has_parent_with_node_with_leaf - expansion on  on has_parent_with_leaf - looks for a second node, that is a child of the parent that has a given leaf
+	 * @param node_name
+	 * @param search_parameters
+	 * @param parameter_values
+	 * @param return_all
+	 * @param return_index
+	 * @return
+	 */
+	public ArrayList<XMLNode> search(String node_name, ArrayList<String> search_parameters, ArrayList<ArrayList<String>> parameter_values){
+		ArrayList<XMLNode> nodes = new ArrayList<XMLNode>();
+		
+		if(tree != null){
+			// first get all nodes matching node_name
+			nodes = tree.findNodes(node_name);
+
+			//now process search parameters
+			for(int ii = 0; ii < search_parameters.size(); ii++){
+				String param = search_parameters.get(ii);
+				ArrayList<XMLNode> new_nodes = new ArrayList<XMLNode>();
+				for(int jj = 0; jj < nodes.size(); jj++){
+					XMLNode curNode = nodes.get(jj);					
+					if(param.equals("has_parent")){
+						ArrayList<String> values = parameter_values.get(ii);
+						if(values.size() > 0){
+							String parent_name = values.get(0);
+							ArrayList<Integer> parents = curNode.hasParent(parent_name);
+							boolean pass = false;
+							if(values.size() > 1){
+								for(int kk = 1; kk < values.size(); kk++){
+									int value = Integer.parseInt(values.get(kk));
+									if(parents.contains(value))
+										pass = true;
+								}
+							} else{
+								if(parents.size() > 0)
+									pass = true;
+							}
+							if(pass)
+								new_nodes.add(curNode);
+						} else
+							System.out.println("[ERROR] XML_Parser.search error :: search_parameter has_parent does not provide any values.");
+					} else if(param.equals("is_root")){
+						ArrayList<String> values = parameter_values.get(ii);
+						boolean condition = true;
+						if(values.size() > 0)
+							condition = Boolean.parseBoolean(values.get(0));
+						if(curNode.isRoot() == condition)
+							new_nodes.add(curNode);
+					} else if(param.equals("is_type")){
+						ArrayList<String> values = parameter_values.get(ii);
+						ArrayList<Integer> type_values = new ArrayList<Integer>();
+						if(values.size() > 0){
+							for(int kk = 0; kk< values.size(); kk ++ ){
+								if(values.get(kk).equals("tag"))
+									type_values.add(0);
+								else if(values.get(kk).equals("leaf"))
+									type_values.add(1);
+								else if(values.get(kk).equals("comment"))
+									type_values.add(2);
+								else if(values.get(kk).equals("attribute"))
+									type_values.add(3);
+							}
+							if(type_values.contains(curNode.node_type))
+								new_nodes.add(curNode);
+						} else
+							System.out.println("[ERROR] XML_Parser.search error :: search_parameter is_type does not provide any values.");
+					} else if(param.equals("has_parent_with_leaf")){
+						ArrayList<String> values = parameter_values.get(ii);
+						if(values.size() > 1){
+							String parent_name = values.get(0);
+							String leaf_name = values.get(1);
+							XMLNode par = curNode.getParent(parent_name, curNode);
+							if(par != null){
+								ArrayList<String> leaves = par.getLeaves(par);
+								if(leaves.contains(leaf_name))
+									new_nodes.add(curNode);
+							}
+						} else{
+							System.out.println("[ERROR] XML_Parser.search error :: search_parameter has_parent_with_leaf does not provide enough values.");
+						}
+					} else if(param.equals("has_parent_with_child_with_leaf")){
+						ArrayList<String> values = parameter_values.get(ii);
+						if(values.size() > 2){
+							String parent_name = values.get(0);
+							String child_name = values.get(1);
+							String leaf_name = values.get(2);
+							XMLNode par = curNode.getParent(parent_name, curNode);
+							if(par != null){
+								XMLNode chi = par.getChild(child_name, par);
+								if(chi != null){
+									ArrayList<String> leaves = chi.getLeaves(chi);
+									if(leaves.contains(leaf_name))
+										new_nodes.add(curNode);
+								}
+							}
+						} else{
+							System.out.println("[ERROR] XML_Parser.search error :: search_parameter has_parent_with_child_with_leaf does not provide enough values.");
+						}
+					} else{
+						System.out.println("[ERROR] XML_Parser.search error :: unidentified search parameter.");
+					}
+				}
+				nodes = new_nodes;
+			}
+		}
+		return nodes;
+	}
+
+	private void parseSection(String line, XMLTree tree){
 		//first identify the line
 		if(line.length() > 0){
 			char first_char = line.charAt(0), last_char = line.charAt(line.length()-1);
@@ -52,6 +203,8 @@ public class XML_Parser {
 				type = 2;
 			else if((first_char == '>') && (last_char == '<'))
 				type = 3;
+			else
+				System.out.println("[ERROR] XML_Parser.parseSection error :: XML file line starts with unknown parameters.");
 
 			line = line.substring(1, line.length()-1);
 			if(type == 0){
@@ -88,7 +241,28 @@ public class XML_Parser {
 
 				if(tag_type == 0){	//get encoding and version
 					ArrayList<String> attributes = StrOps.getAllTextBetweenPatternsIgnoringSections(line, " ", opening_sequences, closing_sequences);
-					attributes.clear();
+					//first attribute is the tag name - the rest are actual attributes
+					//since this is just the encoding and version, we can ignore the actual tag
+					boolean version_set = false, encoding_set = false;
+					for(int kk = 1; kk < attributes.size(); kk++){
+						ArrayList<String> single_attribute = partitionAttribute(attributes.get(kk));
+						if(single_attribute.size() == 2 && single_attribute.get(0).equals("version")){
+							tree.setVersion(single_attribute.get(1));
+							version_set = true;
+						} else if(single_attribute.size() == 2 && single_attribute.get(0).equals("encoding")){
+							tree.setEncoding(single_attribute.get(1));
+							encoding_set = true;
+						} else{
+							System.out.println("[ERROR] XML_Parser.parseSection error :: XML file contains unidentified version information.");
+						}
+					}
+					
+					if(!version_set){
+						System.out.println("[ERROR] XML_Parser.parseSection error :: XML file does not contain version information.");
+					}
+					if(!encoding_set){
+						System.out.println("[ERROR] XML_Parser.parseSection error :: XML file does not contain encoding information.");
+					}
 				}				
 				else if(tag_type == 2){ //get CDATA
 					tree.setCDATA(line);
@@ -96,31 +270,72 @@ public class XML_Parser {
 				else if(tag_type == 1){	//comment - ignored
 
 				}
-				else if(tag_type == 3){	//get regular tag
-
+				else if(tag_type == 3 || tag_type == 4){	//get regular tag
+					ArrayList<String> attributes = StrOps.getAllTextBetweenPatternsIgnoringSections(line, " ", opening_sequences, closing_sequences);
+					if(attributes.size() > 0){
+						if(!StrOps.trimString(attributes.get(0)).equals("")){
+							tree.addNode(new XMLNode(ID++, StrOps.trimString(attributes.get(0)), 0));
+						
+							if(attributes.size() > 1){
+								for(int ii = 1; ii < attributes.size(); ii++){
+									ArrayList<String> single_attribute = partitionAttribute(attributes.get(ii));
+									if(single_attribute.size() > 0){
+										if(!StrOps.trimString(single_attribute.get(0)).equals("")){
+											tree.addNode(new XMLNode(ID++, StrOps.trimString(single_attribute.get(0)), 3));
+											if(single_attribute.size() > 1){
+												if(!StrOps.trimString(single_attribute.get(1)).equals("")){
+													tree.addNode(new XMLNode(ID++, StrOps.trimString(single_attribute.get(1)), 1));
+													if(!tree.stepUp())
+														System.out.println("[ERROR] XML_Parser.parseSection error :: Step up failed");
+												}
+											}
+											if(!tree.stepUp())
+												System.out.println("[ERROR] XML_Parser.parseSection error :: Step up failed");
+										}
+									}
+								}
+							}
+							if(tag_type == 4)
+								if(!tree.stepUp())
+									System.out.println("[ERROR] XML_Parser.parseSection error :: Step up failed");
+						}
+					}
+					else{
+						System.out.println("[ERROR] XML_Parser.parseSection error :: attributes return nothing.");
+					}
 				}
-				else if(tag_type == 4){
-
-				}
-				else if(tag_type == 4){
-					
+				else if(tag_type == 5){
+					//has no attributes
+					if(line.equals(tree.getCurNodeName())){
+						if(!tree.stepUp())
+							System.out.println("[ERROR] XML_Parser.parseSection error :: Step up failed");
+					}
+					else{
+						System.out.println("[ERROR] XML_Parser.parseSection error :: Closing tag does not match the tag that opened it.");
+					}
 				}
 
 			}
 			else if(type == 1){		//1,2,3 are treated the same
-				tree.addNode(new XMLNode(ID, line, 1));
-				if(!tree.stepUp())
-					System.out.println(String.format("[ERROR] XML_Parser.parseSection error :: stepUp returned false from a leaf. line = %s ID = %d", line, ID));
+				if(!StrOps.trimString(line).equals("")){
+					tree.addNode(new XMLNode(ID++, StrOps.trimString(line), 1));
+					if(!tree.stepUp())
+						System.out.println(String.format("[ERROR] XML_Parser.parseSection error :: stepUp returned false from a leaf. line = %s ID = %d", line, ID));
+				}
 			}
 			else if(type == 2){
-				tree.addNode(new XMLNode(ID, line, 1));
-				if(!tree.stepUp())
-					System.out.println(String.format("[ERROR] XML_Parser.parseSection error :: stepUp returned false from a leaf. line = %s ID = %d", line, ID));
+					if(!StrOps.trimString(line).equals("")){
+					tree.addNode(new XMLNode(ID++, StrOps.trimString(line), 1));
+					if(!tree.stepUp())
+						System.out.println(String.format("[ERROR] XML_Parser.parseSection error :: stepUp returned false from a leaf. line = %s ID = %d", line, ID));
+				}
 			}
 			else if(type == 3){
-				tree.addNode(new XMLNode(ID, line, 1));
-				if(!tree.stepUp())
-					System.out.println(String.format("[ERROR] XML_Parser.parseSection error :: stepUp returned false from a leaf. line = %s ID = %d", line, ID));
+				if(!StrOps.trimString(line).equals("")){
+					tree.addNode(new XMLNode(ID++, StrOps.trimString(line), 1));
+					if(!tree.stepUp())
+						System.out.println(String.format("[ERROR] XML_Parser.parseSection error :: stepUp returned false from a leaf. line = %s ID = %d", line, ID));
+				}
 			}
 			else{
 				System.out.println(String.format("[ERROR] XML_Parser.parseSection error :: Invalid type. line = %s ID = %d", line, ID));
@@ -152,4 +367,16 @@ public class XML_Parser {
 		}
 		return file;
 	}
+
+	private ArrayList<String> partitionAttribute(String attribute){
+		ArrayList<String> parts = new ArrayList<String>();
+		int index = StrOps.findPattern(attribute, "=");
+		if(index == -1){
+			parts.add(attribute);
+		} else{
+			parts.add(attribute.substring(0,index));
+			parts.add(attribute.substring(index+1));
+		}
+		return parts;
+	} 
 }

@@ -41,6 +41,9 @@
 		<VERSION>
 			1.1
 		</VERSION>
+		<TEST>
+			test_string
+		</TEST>
 	</String>
 	<int>
 		<DELAY_GO>
@@ -55,5 +58,8 @@
 		<LOGGING_LEVEL>
 			5
 		</LOGGING_LEVEL>
+		<TEST>
+			test_int
+		</TEST>
 	</int>
 </defined_values>

@@ -11,9 +11,26 @@ public class XMLTree {
 	private String encoding;
 	private String CDATA;
 
+	public ArrayList<XMLNode> findNodes(String node_name){
+		ArrayList<XMLNode> nodes = new ArrayList<XMLNode>();
+		for(int ii = 0; ii < rootList.size(); ii++){
+			nodes = recusiveFind(node_name, nodes, rootList.get(ii));
+		}
+		return nodes;
+	}
+
+	private ArrayList<XMLNode> recusiveFind(String node_name, ArrayList<XMLNode> nodes, XMLNode curNode){
+		if(curNode.text.equals(node_name))
+			nodes.add(curNode);
+		for(int ii = 0; ii < curNode.children.size(); ii++){
+			nodes = recusiveFind(node_name, nodes, curNode.children.get(ii));
+		}
+		return nodes;
+	}
 
 	public void addNode(XMLNode node){
 		if(currentXMLNode == null){
+			node.parent = null;
 			rootList.add(node);
 			currentXMLNode = node;
 		} else{
@@ -24,7 +41,7 @@ public class XMLTree {
 	}
 
 	public boolean stepUp(){
-		if(currentXMLNode == null || currentXMLNode.parent == null)
+		if(currentXMLNode == null)
 			return false;
 		currentXMLNode = currentXMLNode.parent;
 		return true;
@@ -47,5 +64,22 @@ public class XMLTree {
 	}
 	public String getCDATA(){
 		return CDATA;
+	}
+
+	public String getCurNodeName(){
+		return currentXMLNode.text;
+	}
+
+	public void print(){
+		System.out.println("Printing Tree");
+		System.out.println("Version = " + version);
+		System.out.println("Encoding = " + encoding);
+		System.out.println("CDATA = " + CDATA);
+
+		System.out.println("\nNodes:");
+		for(int ii = 0;ii < rootList.size(); ii++){
+			rootList.get(ii).printAll();			
+		}
+
 	}
 }
