@@ -40,6 +40,30 @@ public class XMLTree {
 		}
 	}
 
+	public void removeNode(XMLNode node){
+		XMLNode parent = node.parent;
+		ArrayList<XMLNode> children = node.children;
+
+		if(parent != null){
+			parent.removeChild(node.ID);
+			for(int ii = 0; ii < children.size(); ii++){
+				children.get(ii).parent = parent;
+				parent.children.add(children.get(ii));
+			}
+		} else{
+			for(int ii = 0; ii < children.size(); ii++){
+				children.get(ii).parent = null;
+				rootList.add(children.get(ii));
+			}
+		}
+	}
+
+	public void removeAllOfNode(String name){
+		ArrayList<XMLNode> nodes = findNodes(name);
+		for(int ii = 0; ii < nodes.size(); ii++)
+			removeNode(nodes.get(ii));
+	}
+
 	public boolean stepUp(){
 		if(currentXMLNode == null)
 			return false;

@@ -190,6 +190,10 @@ public class XML_Parser {
 		return nodes;
 	}
 
+	public void removeAllOfNode(String name){
+		tree.removeAllOfNode(name);
+	}
+
 	private void parseSection(String line, XMLTree tree){
 		//first identify the line
 		if(line.length() > 0){
