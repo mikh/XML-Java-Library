@@ -13,6 +13,9 @@ public class XML_Parser {
 	XMLTree tree;
 	private int ID;
 	
+	/**
+	 * XML_Parser constructor. Takes no arguments. Sets up initial values for XML parser
+	 */
 	public XML_Parser(){
 		opening_sequences.add("<");
 		closing_sequences.add(">");
@@ -24,6 +27,10 @@ public class XML_Parser {
 		closing_sequences.add("<");
 	}
 	
+	/**
+	 * Parses the given XML File. The results of the parsing are loaded into a XMLTree variable.
+	 * @param XMLFile - path to the XML file.
+	 */
 	public void parseXML(String XMLFile){
 		tree = new XMLTree();
 		String file = readFile(XMLFile);
@@ -83,12 +90,11 @@ public class XML_Parser {
 	 *		has_parent_with_leaf - expansion on has_parent. Same idea, except 2nd parameter is the value of the leaf. If any of the leaves of the parent match the value the node passes
 	 *			position from child not implemented	
 	 *		has_parent_with_node_with_leaf - expansion on  on has_parent_with_leaf - looks for a second node, that is a child of the parent that has a given leaf
-	 * @param node_name
-	 * @param search_parameters
-	 * @param parameter_values
-	 * @param return_all
-	 * @param return_index
-	 * @return
+	 * </p>
+	 * @param node_name - text of node to search for
+	 * @param search_parameters - parameters as described above
+	 * @param parameter_values - values for parameters as defined above
+	 * @return List of XMLNodes matching the search parameters
 	 */
 	public ArrayList<XMLNode> search(String node_name, ArrayList<String> search_parameters, ArrayList<ArrayList<String>> parameter_values){
 		ArrayList<XMLNode> nodes = new ArrayList<XMLNode>();
@@ -190,10 +196,19 @@ public class XML_Parser {
 		return nodes;
 	}
 
+	/**
+	 * Removes all instances of a node with text as <name>.
+	 * @param name - text that marks the node for removal.
+	 */
 	public void removeAllOfNode(String name){
 		tree.removeAllOfNode(name);
 	}
 
+	/**
+	 * Parses a piece of the XML file to put it in a tag or leaf.
+	 * @param line - line that has been delimited
+	 * @param tree - XMLTree containing tree version of the XML file
+	 */
 	private void parseSection(String line, XMLTree tree){
 		//first identify the line
 		if(line.length() > 0){
@@ -347,6 +362,13 @@ public class XML_Parser {
 		}
 	}
 	
+	/**
+	 * Updates the current index after parsing a line
+	 * @param file - the XML file in String format
+	 * @param line - the line that has been parsed
+	 * @param index - the current index
+	 * @return - outputs the new index
+	 */
 	private int updateIndex(String file, String line, int index){
 		int new_ind = StrOps.findPatternAfterIndex(file, line, index);
 		if(new_ind == -1){
@@ -356,6 +378,11 @@ public class XML_Parser {
 		return (new_ind + line.length() - 1);
 	}
 	
+	/**
+	 * Reads in the XML file into a String
+	 * @param XMLFile - path to the XML file
+	 * @return - String containing the XML file data
+	 */
 	private String readFile(String XMLFile){
 		String file = null;
 		try{
@@ -372,6 +399,11 @@ public class XML_Parser {
 		return file;
 	}
 
+	/**
+	 * Breaks up the inner contents of an attribute into the attribute and the value of the attribute
+	 * @param attribute - attribute and value as a whole string
+	 * @return - the parts of the attribute
+	 */
 	private ArrayList<String> partitionAttribute(String attribute){
 		ArrayList<String> parts = new ArrayList<String>();
 		int index = StrOps.findPattern(attribute, "=");
