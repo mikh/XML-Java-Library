@@ -195,6 +195,26 @@ public class XML_Parser {
 		}
 		return nodes;
 	}
+	
+	/**
+	 * Same as search, but returns the leaves of found nodes.
+	 * @param node_name
+	 * @param search_parameters
+	 * @param parameter_values
+	 * @return
+	 */
+	public ArrayList<ArrayList<String>> searchForLeaves(String node_name, ArrayList<String> search_parameters, ArrayList<ArrayList<String>> parameter_values){
+		ArrayList<XMLNode> nodes = search(node_name, search_parameters, parameter_values);
+		ArrayList<ArrayList<String>> leaves = new ArrayList<ArrayList<String>>();
+		for(int ii = 0; ii < nodes.size(); ii++){
+			leaves.add(new ArrayList<String>());
+			for(int jj = 0; jj < nodes.get(ii).children.size(); jj++){
+				if(nodes.get(ii).children.get(jj).node_type == 1)
+					leaves.get(ii).add(nodes.get(ii).children.get(jj).text);
+			}
+		}
+		return leaves;
+	}
 
 	/**
 	 * Removes all instances of a node with text as <name>.
