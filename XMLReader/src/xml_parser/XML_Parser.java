@@ -168,7 +168,7 @@ public class XML_Parser {
 						} else{
 							System.out.println("[ERROR] XML_Parser.search error :: search_parameter has_parent_with_leaf does not provide enough values.");
 						}
-					} else if(param.equals("has_parent_with_child_with_leaf")){
+					} else if(param.equals("has_parent_with_node_with_leaf")){
 						ArrayList<String> values = parameter_values.get(ii);
 						if(values.size() > 2){
 							String parent_name = values.get(0);
@@ -404,19 +404,20 @@ public class XML_Parser {
 	 * @return - String containing the XML file data
 	 */
 	private String readFile(String XMLFile){
-		String file = null;
+		StringBuilder file = new StringBuilder(20000);
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(XMLFile));
 			String line;
 			while((line = br.readLine()) != null){
-				file += line;
-				file += " ";
+				file.append(line);
+				file.append(" ");
 			}
 			br.close();
 		} catch (IOException e){
 			System.out.println("[ERROR] XML_Parser.readFile error :: Cannot read XML File: " + XMLFile);
+			file = null;
 		}
-		return file;
+		return file.toString();
 	}
 
 	/**
