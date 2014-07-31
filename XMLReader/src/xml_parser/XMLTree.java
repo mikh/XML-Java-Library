@@ -18,6 +18,37 @@ public class XMLTree {
 		}
 		return nodes;
 	}
+	
+	public ArrayList<XMLNode> startTreeWalk(){
+		if(rootList != null && rootList.size() > 0){
+			currentXMLNode = rootList.get(0);
+		}
+		return rootList;
+	}
+	
+	public void setWalkNode(XMLNode node){
+		currentXMLNode = node;
+	}
+	
+	public void getNodeData(ArrayList<XMLNode> children, ArrayList<XMLNode> attributes, ArrayList<XMLNode> leaves){
+		if(currentXMLNode != null){
+			children = new ArrayList<XMLNode>();
+			attributes = new ArrayList<XMLNode>();
+			leaves = new ArrayList<XMLNode>();
+			
+			for(int ii = 0; ii < currentXMLNode.children.size(); ii++){
+				if(currentXMLNode.children.get(ii).node_type == 0){
+					children.add(currentXMLNode.children.get(ii));
+				}
+				else if(currentXMLNode.children.get(ii).node_type == 1){
+					leaves.add(currentXMLNode.children.get(ii));
+				}
+				else if(currentXMLNode.children.get(ii).node_type == 3){
+					attributes.add(currentXMLNode.children.get(ii));
+				}
+			}
+		}
+	}
 
 	private ArrayList<XMLNode> recusiveFind(String node_name, ArrayList<XMLNode> nodes, XMLNode curNode){
 		if(curNode.text.equals(node_name))

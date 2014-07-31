@@ -13,6 +13,7 @@ public class XML_Parser {
 	XMLTree tree;
 	private int ID;
 	
+	
 	/**
 	 * XML_Parser constructor. Takes no arguments. Sets up initial values for XML parser
 	 */
@@ -26,6 +27,54 @@ public class XML_Parser {
 		opening_sequences.add(">");
 		closing_sequences.add("<");
 	}
+	
+	/**
+	 * Initializes tree walk and returns the root list of the tree
+	 * @return 
+	 */
+	public ArrayList<XMLNode> startTreeWalk(){
+		if(tree == null)
+			return null;
+		else
+			return tree.startTreeWalk();
+	}
+	
+	public void setWalkNode(XMLNode node){
+		if(tree != null)
+			tree.setWalkNode(node);
+	}
+	
+	public void getNodeData(ArrayList<XMLNode> children, ArrayList<XMLNode> attributes, ArrayList<XMLNode> leaves){
+		if(tree != null){
+			tree.getNodeData(children, attributes, leaves);
+		}
+	}
+	
+	public String getLeaf(XMLNode node){
+		for(int ii = 0; ii < node.children.size(); ii++){
+			if(node.children.get(ii).node_type == 1)
+				return node.children.get(ii).text;
+		}
+		return null;
+	}
+	
+	public void getAttributes(XMLNode node, ArrayList<String> attribute, ArrayList<String> value){
+		if(node.node_type == 0){
+			attribute = new ArrayList<String>();
+			value = new ArrayList<String>();
+			for(int ii = 0; ii < node.children.size(); ii++){
+				if(node.children.get(ii).node_type == 3){
+					attribute.add(node.children.get(ii).text);
+					ArrayList<String> leaf = node.children.get(ii).getLeaves(node.children.get(ii));
+					if(leaf.size() > 0)
+						value.add(leaf.get(0));
+					else
+						value.add("");
+				}
+			}
+		}
+	}
+	
 	
 	/**
 	 * Parses the given XML File. The results of the parsing are loaded into a XMLTree variable.
