@@ -44,10 +44,11 @@ public class XML_Parser {
 			tree.setWalkNode(node);
 	}
 	
-	public void getNodeData(ArrayList<XMLNode> children, ArrayList<XMLNode> attributes, ArrayList<XMLNode> leaves){
+	public ArrayList<ArrayList<XMLNode>> getNodeData(){
 		if(tree != null){
-			tree.getNodeData(children, attributes, leaves);
+			return tree.getNodeData();
 		}
+		return null;
 	}
 	
 	public String getLeaf(XMLNode node){
@@ -58,10 +59,10 @@ public class XML_Parser {
 		return null;
 	}
 	
-	public void getAttributes(XMLNode node, ArrayList<String> attribute, ArrayList<String> value){
+	public ArrayList<ArrayList<String>> getAttributes(XMLNode node){
 		if(node.node_type == 0){
-			attribute = new ArrayList<String>();
-			value = new ArrayList<String>();
+			ArrayList<String> attribute = new ArrayList<String>();
+			ArrayList<String> value = new ArrayList<String>();
 			for(int ii = 0; ii < node.children.size(); ii++){
 				if(node.children.get(ii).node_type == 3){
 					attribute.add(node.children.get(ii).text);
@@ -72,7 +73,12 @@ public class XML_Parser {
 						value.add("");
 				}
 			}
+			ArrayList<ArrayList<String>> pack = new ArrayList<ArrayList<String>>();
+			pack.add(attribute);
+			pack.add(value);
+			return pack;
 		}
+		return null;
 	}
 	
 	

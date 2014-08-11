@@ -30,11 +30,9 @@ public class XMLTree {
 		currentXMLNode = node;
 	}
 	
-	public void getNodeData(ArrayList<XMLNode> children, ArrayList<XMLNode> attributes, ArrayList<XMLNode> leaves){
+	public ArrayList<ArrayList<XMLNode>> getNodeData(){
 		if(currentXMLNode != null){
-			children = new ArrayList<XMLNode>();
-			attributes = new ArrayList<XMLNode>();
-			leaves = new ArrayList<XMLNode>();
+			ArrayList<XMLNode> children = new ArrayList<XMLNode>(), attributes = new ArrayList<XMLNode>(), leaves = new ArrayList<XMLNode>();
 			
 			for(int ii = 0; ii < currentXMLNode.children.size(); ii++){
 				if(currentXMLNode.children.get(ii).node_type == 0){
@@ -47,7 +45,13 @@ public class XMLTree {
 					attributes.add(currentXMLNode.children.get(ii));
 				}
 			}
+			ArrayList<ArrayList<XMLNode>> pack = new ArrayList<ArrayList<XMLNode>>();
+			pack.add(children);
+			pack.add(attributes);
+			pack.add(leaves);
+			return pack;
 		}
+		return null;
 	}
 
 	private ArrayList<XMLNode> recusiveFind(String node_name, ArrayList<XMLNode> nodes, XMLNode curNode){
