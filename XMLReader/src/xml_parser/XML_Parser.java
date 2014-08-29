@@ -491,4 +491,12 @@ public class XML_Parser {
 		}
 		return parts;
 	} 
+	
+	/**
+	 * Returns the ArrayList<XMLNode> of the tree's root list
+	 * @return rootList
+	 */
+	public ArrayList<XMLNode> getRootList(){
+		return tree.getRootList();
+	}
 }

@@ -23,6 +23,8 @@ public class XMLNode {
 		children.add(node);
 	}
 
+	
+	
 	public void removeChild(int c_ID){
 		for(int ii = children.size()-1; ii >= 0; ii--){
 			if(children.get(ii).ID == c_ID)
@@ -92,13 +94,49 @@ public class XMLNode {
 		return null;
 	}
 
+	/**
+	 * Gets all XMLNodes that are the child tags of the current node
+	 * @return ArrayList<XMLNode>
+	 */
+	public ArrayList<XMLNode> getTags(){
+		return getType(this, 0);
+	}
+	
+	/**
+	 * Gets all the leaf texts of the XMLNode <node>
+	 * @param node - XMLNode for which to get the leaves
+	 * @return ArrayList<String> of leaves
+	 */
 	public ArrayList<String> getLeaves(XMLNode node){
-		ArrayList<String> leaves = new ArrayList<String>();
+		ArrayList<XMLNode> leaves = getType(node, 1);
+		ArrayList<String> leaf = new ArrayList<String>();
+		for(int ii = 0; ii < leaves.size(); ii++){
+			leaf.add(leaves.get(ii).text);
+		}
+		return leaf;
+	}
+	
+	/**
+	 * Gets all XMLNodes that are child attributes of the current node
+	 * @return ArrayList<XMLNode> of attributes
+	 */
+	public ArrayList<XMLNode> getAttributes(){
+		return getType(this, 3);
+	}
+	
+	/**
+	 * Function that provides the basis for getTags, getLeaves, and getAttributes
+	 * @param node - node to run the search from
+	 * @param type - type to search for
+	 * @return ArrayList<XMLNode> that are children of <node> and match node_type <type>
+	 */
+	private ArrayList<XMLNode> getType(XMLNode node, int type){
+		ArrayList<XMLNode> nodes = new ArrayList<XMLNode>();
 		for(int ii = 0; ii < node.children.size(); ii++){
 			XMLNode child = node.children.get(ii);
-			if(child.node_type == 1)
-				leaves.add(child.text);
+			if(child.node_type == type)
+				nodes.add(child);
 		}
-		return leaves;
+		return nodes;
 	}
 }

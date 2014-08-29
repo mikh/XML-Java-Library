@@ -19,6 +19,14 @@ public class XMLTree {
 		return nodes;
 	}
 	
+	/**
+	 * Gets the root list of XMLNodes
+	 * @return rootList
+	 */
+	public ArrayList<XMLNode> getRootList(){
+		return rootList;
+	}
+	
 	public ArrayList<XMLNode> startTreeWalk(){
 		if(rootList != null && rootList.size() > 0){
 			currentXMLNode = rootList.get(0);
